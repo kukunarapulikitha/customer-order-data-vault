@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: Current state of each customer (latest satellite row), enriched with nation/region names.
+    columns:
+      - name: CUSTOMER_ID
+        description: TPC-H C_CUSTKEY business key.
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_order
+    description: Current state of each order, including the business-vault priority tier.
+    columns:
+      - name: ORDER_ID
+        description: TPC-H O_ORDERKEY business key.
+        data_tests:
+          - unique
+          - not_null
+      - name: ORDER_PRIORITY_BUCKET
+        description: Soft business rule from bv_sat_order (Tier-1 / Tier-2 / Tier-3).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Tier-1', 'Tier-2', 'Tier-3']
+
+  - name: fct_customer_order
+    description: Factless fact linking each order to its customer.
