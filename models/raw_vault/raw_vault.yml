@@ -6,7 +6,7 @@ models:
     columns:
       - name: CUSTOMER_HK
         description: SHA1 hash of C_CUSTKEY.
-        tests:
+        data_tests:
           - unique
           - not_null
 
@@ -15,7 +15,7 @@ models:
     columns:
       - name: ORDER_HK
         description: SHA1 hash of O_ORDERKEY.
-        tests:
+        data_tests:
           - unique
           - not_null
 
@@ -23,38 +23,42 @@ models:
     description: Many-to-one relationship between orders and their customer.
     columns:
       - name: CUSTOMER_ORDER_HK
-        tests:
+        data_tests:
           - unique
           - not_null
       - name: CUSTOMER_HK
-        tests:
+        data_tests:
           - not_null
           - relationships:
-              to: ref('hub_customer')
-              field: CUSTOMER_HK
+              arguments:
+                to: ref('hub_customer')
+                field: CUSTOMER_HK
       - name: ORDER_HK
-        tests:
+        data_tests:
           - not_null
           - relationships:
-              to: ref('hub_order')
-              field: ORDER_HK
+              arguments:
+                to: ref('hub_order')
+                field: ORDER_HK
 
   - name: sat_customer_details
     description: Descriptive attribute history for each customer_hk.
     columns:
       - name: CUSTOMER_HK
-        tests:
+        data_tests:
           - not_null
           - relationships:
-              to: ref('hub_customer')
-              field: CUSTOMER_HK
+              arguments:
+                to: ref('hub_customer')
+                field: CUSTOMER_HK
 
   - name: sat_order_details
     description: Descriptive attribute history for each order_hk.
     columns:
       - name: ORDER_HK
-        tests:
+        data_tests:
           - not_null
           - relationships:
-              to: ref('hub_order')
-              field: ORDER_HK
+              arguments:
+                to: ref('hub_order')
+                field: ORDER_HK

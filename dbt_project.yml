@@ -18,12 +18,13 @@ clean-targets:
 # AutomateDV global configuration.
 # hash: SHA1 to match the SHA1_BINARY() used in the native Snowflake guide.
 # See: https://automate-dv.readthedocs.io/en/latest/best_practises/hashing/
+# These must be top-level vars: AutomateDV's macros run inside this project's
+# models, so vars scoped under `automate_dv:` are never seen (it silently
+# falls back to MD5 and '||').
 vars:
-  automate_dv:
-    hash: "SHA1"
-    concat_string: "^"
-    null_placeholder_string: "-1"
-    null_placeholder_num: -1
+  hash: "SHA1"
+  concat_string: "^"
+  null_placeholder_string: "-1"
 
 models:
   tpch_data_vault:
