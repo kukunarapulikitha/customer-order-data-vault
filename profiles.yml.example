@@ -1,15 +1,24 @@
 # Copy to ~/.dbt/profiles.yml (or ./profiles.yml, which is gitignored).
 # Never commit real credentials. Password is read from an env var.
+# role is omitted, so the user's default role is used; add `role:` if needed.
 tpch_data_vault:
   target: dev
   outputs:
-    dev:
+    dev:        # vars-based batch simulation over SNOWFLAKE_SAMPLE_DATA
       type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"      # e.g. abc12345.us-east-1
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"      # e.g. ORGNAME-ACCOUNTNAME
       user: "{{ env_var('SNOWFLAKE_USER') }}"
       password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
-      role: SYSADMIN
-      warehouse: ENGINEERING_WH       # or COMPUTE_WH on a fresh trial
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH') }}"
       database: DBT_STAGING           # default only; each layer sets +database in dbt_project.yml
       schema: dev
+      threads: 4
+    lz:         # reads the native guide's Snowpipe-fed DEV_LZ tables
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'COMPUTE_WH') }}"
+      database: DBT_STAGING
+      schema: dev_lz                  # separate schemas so the two modes never mix
       threads: 4

@@ -69,12 +69,38 @@ hand with `SHA1_BINARY(UPPER(TRIM(...)))`. Set `hash: "SHA1"` in
    ```
    dbt test
    ```
-5. Re-run to see the incremental models behave (they'll process 0 new
-   rows against static source data, since TPC-H sample data doesn't
-   change — this is expected. To see incremental behavior in action,
-   point the `tpch` source at a table that actually receives new rows,
-   e.g. the `DEV_LZ.TPCH_CUSTOMER_SYS.stg_customer` / `stg_orders`
-   tables from `DVRealTime.sql`, after Snowpipe has loaded a new batch.)
+5. Re-run to see the incremental models behave — see the two feeding
+   modes below.
+
+## Two ways to feed the vault
+
+The staging, vault and mart models are identical in both modes; only
+`models/staging/base/base_customer.sql` / `base_orders.sql` switch on
+`target.name`.
+
+| | `dev` target (default) | `lz` target |
+|---|---|---|
+| Source | `SNOWFLAKE_SAMPLE_DATA.TPCH_SF1` | `DEV_LZ.TPCH_CUSTOMER_SYS.stg_customer`, `DEV_LZ.TPCH_ORDERS_SYS.stg_orders` (Snowpipe-fed, from the native guide) |
+| New data per run | Simulated with vars: `--vars '{order_batch: 2, customer_limit: 0}'` | Whatever Snowpipe has actually landed since the last run |
+| LOAD_DATETIME / RECORD_SOURCE | `CURRENT_TIMESTAMP()` / constant | Real ingestion metadata: `ldts` / `rsrc` |
+| Setup needed | None beyond the three output databases | DVArchitecture.sql + DVRealTime.sql Landing Zone steps |
+| Schemas | `dev_*` | `dev_lz_*` (never mixes with `dev`) |
+
+```
+dbt build                      # dev: batch simulation
+dbt build --target lz          # lz: read the landing zone
+dbt source freshness --target lz
+```
+
+Findings from the landing zone (the guide's own DDL, not this project):
+- `stg_orders.o_totalprice` is declared `NUMBER` (scale 0), so Snowpipe rounds
+  prices to whole units on load (1,978 of the first 2,000 orders). dbt casts it
+  back to `NUMBER(12,2)` but the cents are already gone.
+- Hub hash keys built by AutomateDV are byte-identical to the guide's
+  `SHA1_BINARY(UPPER(TRIM(key)))` (0 differences either way on 1.5M customers
+  and 2,000 orders). Hashdiffs differ by design — the guide concatenates with
+  `ARRAY_TO_STRING` in declared column order, AutomateDV uses `CONCAT_WS('^')`
+  over alphabetically sorted columns — so don't mix the two vaults' satellites.
 
 ## Where dbt genuinely improves on the hand-written SQL
 

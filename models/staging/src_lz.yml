@@ -1,0 +1,37 @@
+version: 2
+
+# Landing Zone tables from the native guide (DVArchitecture.sql + DVRealTime.sql),
+# loaded by Snowpipe (stg_customer_pp / stg_orders_pp). Used only by the `lz`
+# target: `dbt build --target lz`. The default `dev` target simulates batches
+# with vars over SNOWFLAKE_SAMPLE_DATA instead and never touches DEV_LZ.
+
+sources:
+  - name: lz_customer
+    database: DEV_LZ
+    schema: TPCH_CUSTOMER_SYS
+    description: Customer system landing zone. One VARIANT column per row (raw_json) plus load metadata.
+    config:
+      enabled: "{{ target.name == 'lz' }}"
+      loaded_at_field: ldts
+      freshness:
+        warn_after: {count: 24, period: hour}
+    tables:
+      - name: stg_customer
+        description: >
+          JSON-per-row customer feed. ldts = Snowpipe load time, rsrc = record source,
+          filename / file_row_seq = file lineage.
+
+  - name: lz_orders
+    database: DEV_LZ
+    schema: TPCH_ORDERS_SYS
+    description: Orders system landing zone. CSV columns plus load metadata.
+    config:
+      enabled: "{{ target.name == 'lz' }}"
+      loaded_at_field: ldts
+      freshness:
+        warn_after: {count: 24, period: hour}
+    tables:
+      - name: stg_orders
+        description: >
+          CSV-per-row orders feed. Note: the guide's DDL declares o_totalprice as NUMBER
+          (scale 0), so Snowpipe rounds prices to whole units on load.
