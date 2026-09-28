@@ -101,6 +101,20 @@ Findings from the landing zone (the guide's own DDL, not this project):
   and 2,000 orders). Hashdiffs differ by design — the guide concatenates with
   `ARRAY_TO_STRING` in declared column order, AutomateDV uses `CONCAT_WS('^')`
   over alphabetically sorted columns — so don't mix the two vaults' satellites.
+- The guide's pipes use an unqualified target (`COPY INTO stg_orders`), so
+  `ALTER PIPE ... REFRESH` fails with "Table 'STG_ORDERS' does not exist" unless
+  the session is in that schema first: `USE SCHEMA DEV_LZ.TPCH_ORDERS_SYS;`.
+
+Loading a new batch for the `lz` target (run in Snowsight, then `dbt build --target lz`):
+
+```sql
+COPY INTO @DEV_LZ.TPCH_ORDERS_SYS.orders_data
+FROM (SELECT * FROM SNOWFLAKE_SAMPLE_DATA.TPCH_SF10.ORDERS
+      WHERE o_orderkey > <current max o_orderkey> ORDER BY o_orderkey LIMIT 1000)
+INCLUDE_QUERY_ID = TRUE;
+USE SCHEMA DEV_LZ.TPCH_ORDERS_SYS;
+ALTER PIPE stg_orders_pp REFRESH;
+```
 
 ## Where dbt genuinely improves on the hand-written SQL
 
