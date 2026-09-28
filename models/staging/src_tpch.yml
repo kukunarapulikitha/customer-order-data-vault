@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: tpch
+    database: SNOWFLAKE_SAMPLE_DATA
+    schema: TPCH_SF1
+    description: >
+      Snowflake's built-in TPC-H sample dataset. In the native Snowflake
+      guide, this is unloaded into files and re-loaded via Snowpipe to
+      simulate three separate source systems. Here, dbt reads it directly;
+      swap these source() definitions for your real Landing Zone tables
+      (e.g. DEV_LZ.TPCH_CUSTOMER_SYS.stg_customer) once Snowpipe/Streams
+      are landing real data.
+    tables:
+      - name: customer
+      - name: orders
+      - name: nation
+      - name: region

@@ -1,0 +1,15 @@
+# Copy to ~/.dbt/profiles.yml (or ./profiles.yml, which is gitignored).
+# Never commit real credentials. Password is read from an env var.
+tpch_data_vault:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"      # e.g. abc12345.us-east-1
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: SYSADMIN
+      warehouse: ENGINEERING_WH       # or COMPUTE_WH on a fresh trial
+      database: DBT_DV                # dbt will create schemas inside this
+      schema: dev
+      threads: 4

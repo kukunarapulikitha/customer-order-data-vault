@@ -1,0 +1,44 @@
+name: 'tpch_data_vault'
+version: '1.0.0'
+config-version: 2
+
+profile: 'tpch_data_vault'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# AutomateDV global configuration.
+# hash: SHA1 to match the SHA1_BINARY() used in the native Snowflake guide.
+# See: https://automate-dv.readthedocs.io/en/latest/best_practises/hashing/
+vars:
+  automate_dv:
+    hash: "SHA1"
+    concat_string: "^"
+    null_placeholder_string: "-1"
+    null_placeholder_num: -1
+
+models:
+  tpch_data_vault:
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: ['staging']
+    raw_vault:
+      +materialized: incremental
+      +schema: raw_vault
+      +tags: ['raw_vault']
+    business_vault:
+      +schema: business_vault
+      +tags: ['business_vault']
+    marts:
+      +materialized: view
+      +schema: marts
+      +tags: ['marts']
