@@ -32,9 +32,11 @@ See README.md for the model-by-model mapping to the native Snowflake SQL.
 2. Ask the user which role/warehouse to use. Options:
    - Fresh trial: role SYSADMIN, warehouse COMPUTE_WH.
    - If DVArchitecture.sql was run: ENGINEERING_WH works.
-3. Target database `DBT_DV` must exist. If not, give the user this to run in Snowsight
+3. One database per layer (mirrors the guide's DEV_LZ/DEV_DV/DEV_DW), set via
+   `+database` in dbt_project.yml: `DBT_STAGING`, `DBT_DATA_VAULT`, `DBT_WAREHOUSE`.
+   They must exist. If not, give the user this to run in Snowsight
    (don't run DDL yourself unless asked):
-   `CREATE DATABASE IF NOT EXISTS DBT_DV;`
+   `CREATE DATABASE IF NOT EXISTS DBT_STAGING;` (and the same for the other two)
 4. `dbt debug` must pass all checks (on both `dev` and `lz` targets — see Phase 5b).
 
 ## Phase 3 — Dependencies & compile

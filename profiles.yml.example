@@ -10,6 +10,6 @@ tpch_data_vault:
       password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
       role: SYSADMIN
       warehouse: ENGINEERING_WH       # or COMPUTE_WH on a fresh trial
-      database: DBT_DV                # dbt will create schemas inside this
+      database: DBT_STAGING           # default only; each layer sets +database in dbt_project.yml
       schema: dev
       threads: 4

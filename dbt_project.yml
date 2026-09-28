@@ -26,20 +26,27 @@ vars:
   concat_string: "^"
   null_placeholder_string: "-1"
 
+# One database per layer, mirroring the native guide's DEV_LZ / DEV_DV / DEV_DW split.
+# Schemas are prefixed with the target schema (dev_*, dev_lz_*), so the two
+# targets never share incremental tables.
 models:
   tpch_data_vault:
     staging:
+      +database: DBT_STAGING
       +materialized: view
       +schema: staging
       +tags: ['staging']
     raw_vault:
+      +database: DBT_DATA_VAULT
       +materialized: incremental
       +schema: raw_vault
       +tags: ['raw_vault']
     business_vault:
+      +database: DBT_DATA_VAULT
       +schema: business_vault
       +tags: ['business_vault']
     marts:
+      +database: DBT_WAREHOUSE
       +materialized: view
       +schema: marts
       +tags: ['marts']
