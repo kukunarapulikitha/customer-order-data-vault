@@ -276,6 +276,38 @@ models/
 tests/                                 singular tests (tier rule, duplicate hashdiff)
 ```
 
-## What I learned
+## Scaling up: metadata-driven Data Vault automation
 
-<!-- For the author to write. -->
+This project writes every model explicitly — once with AutomateDV macros, once
+by hand — so the SQL behind each hub, link and satellite is visible and tested.
+At enterprise scale (dozens of sources, many developers) the usual next step is
+to stop writing models and **generate** them from metadata:
+
+| Tool | What it does | Output | Licence |
+|---|---|---|---|
+| [VaultSpeed](https://www.vaultspeed.com/technologies/vaultspeed-dbt) | Harvests source metadata, visual Data Vault modelling, generates and deploys the code, handles schema drift | SQL or dbt (including [AutomateDV-based models](https://www.vaultspeed.com/learning-center/automating-data-vault-with-vaultspeed-and-automatedv)) on Snowflake, Databricks, BigQuery, … | Commercial |
+| [TurboVault4dbt](https://github.com/ScalefreeCOM/turbovault4dbt) (Scalefree) | Reads a source-to-vault mapping from Excel / Google Sheets / Snowflake / BigQuery / SQLite and writes the dbt models | dbt models for the [datavault4dbt](https://github.com/ScalefreeCOM/datavault4dbt) package | Open source |
+| [TurboVault Engine](https://github.com/ScalefreeCOM/turbovault-engine) (Scalefree) | Newer engine: metadata → full dbt project, incl. multi-active / effectivity satellites and PITs | dbt project for datavault4dbt | AGPL-3.0 (commercial licence available) |
+
+VaultSpeed and TurboVault can also be combined: design the model visually in
+VaultSpeed, then generate the dbt code with TurboVault
+([webinar](https://www.vaultspeed.com/webinar-vaultspeed-turbovault-dbt)).
+
+How this project relates:
+- **Not needed at this size.** Two sources, two hubs, one link and two
+  satellites — the dbt blog puts the payoff for generators at roughly 50+
+  sources and 25+ developers
+  ([Data Vault with dbt](https://docs.getdbt.com/blog/data-vault-with-dbt-cloud)).
+- **The same principles, applied by hand:** one hashing definition
+  (`dv_hash()` / AutomateDV vars), insert-only incremental loading, and every
+  structural rule enforced by tests.
+- **What carries over to generated code:** the reconciliation tests. Whatever
+  produces the models — a package, a generator, or hand-written SQL — the
+  `dbt_utils.equality` checks in `raw_vault_native.yml` show the output is
+  identical, and the issues found here (silently ignored hash settings, a
+  satellite source filter that is off by default, a deprecated PIT macro) are
+  exactly the kind a generator hides from you.
+- **Possible extension:** generate a third implementation from a small
+  metadata sheet with TurboVault4dbt and reconcile it against the other two —
+  provided datavault4dbt's hashing can be configured to match (SHA1, `^`
+  delimiter, `-1` NULL placeholder), which would need to be verified first.

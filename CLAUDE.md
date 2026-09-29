@@ -126,8 +126,7 @@ Same vault built with plain dbt SQL, side by side, proven equal by tests.
    staging → raw_vault → business_vault → marts.
 
 ## Phase 8 — Portfolio polish
-- Update README: actual row counts from Phase 5, screenshots placeholder for lineage,
-  "what I learned" section left for the user to write (don't write it for them).
+- Update README: actual row counts from Phase 5, screenshots placeholder for lineage.
 - Optional GitHub Actions workflow running `dbt build` on PRs is out of scope
   unless the user asks (needs secrets).
 - Commit per phase with clear messages.
