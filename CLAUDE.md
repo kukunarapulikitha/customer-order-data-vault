@@ -115,7 +115,7 @@ Same vault built with plain dbt SQL, side by side, proven equal by tests.
 4. `tests/reconcile/` — one singular test per vault table:
    `(automate_dv EXCEPT native) UNION ALL (native EXCEPT automate_dv)` must return 0 rows.
    Exclude LOAD_DATETIME on `dev` (CURRENT_TIMESTAMP differs per view); include it on `lz`.
-5. `models/business_vault/as_of_dates.sql` + `pit_customer.sql` via `automate_dv.pit()`.
+5. `models/business_vault/as_of_dates.sql` + `pit_customer.sql` (hand-written; AutomateDV deprecated `pit()` in 0.11.0).
 6. README: AutomateDV vs hand-written comparison.
 
 ## Phase 7 — Analytics query & docs

@@ -1,0 +1,20 @@
+version: 2
+
+# Proves dv_hash() reproduces AutomateDV's stage() hashing on every staged row.
+
+models:
+  - name: stg_customer_native
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_stg_customer_hashes
+          arguments:
+            compare_model: ref('stg_customer')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]
+
+  - name: stg_orders_native
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_stg_orders_hashes
+          arguments:
+            compare_model: ref('stg_orders')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]

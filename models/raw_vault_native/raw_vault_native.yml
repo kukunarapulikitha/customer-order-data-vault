@@ -1,0 +1,93 @@
+version: 2
+
+# Hand-written raw vault (no AutomateDV). Same PK/FK tests as raw_vault.yml,
+# plus a reconciliation test per table: dbt_utils.equality runs
+# (native EXCEPT automate_dv) and (automate_dv EXCEPT native) and fails on any
+# difference. LOAD_DATETIME is excluded on the dev target only, because there
+# every staging view calls CURRENT_TIMESTAMP() at a slightly different moment;
+# on lz it is the real Snowpipe ldts and must match too.
+
+models:
+  - name: hub_customer_native
+    description: Hand-written customer hub. Must equal hub_customer.
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_hub_customer
+          arguments:
+            compare_model: ref('hub_customer')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]
+    columns:
+      - name: CUSTOMER_HK
+        data_tests: [unique, not_null]
+
+  - name: hub_order_native
+    description: Hand-written order hub. Must equal hub_order.
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_hub_order
+          arguments:
+            compare_model: ref('hub_order')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]
+    columns:
+      - name: ORDER_HK
+        data_tests: [unique, not_null]
+
+  - name: link_customer_order_native
+    description: Hand-written customer-order link. Must equal link_customer_order.
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_link_customer_order
+          arguments:
+            compare_model: ref('link_customer_order')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]
+    columns:
+      - name: CUSTOMER_ORDER_HK
+        data_tests: [unique, not_null]
+      - name: CUSTOMER_HK
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_customer_native')
+                field: CUSTOMER_HK
+      - name: ORDER_HK
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_order_native')
+                field: ORDER_HK
+
+  - name: sat_customer_details_native
+    description: Hand-written customer satellite. Must equal sat_customer_details.
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_sat_customer_details
+          arguments:
+            compare_model: ref('sat_customer_details')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]
+    columns:
+      - name: CUSTOMER_HK
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_customer_native')
+                field: CUSTOMER_HK
+
+  - name: sat_order_details_native
+    description: Hand-written order satellite. Must equal sat_order_details.
+    data_tests:
+      - dbt_utils.equality:
+          name: reconcile_sat_order_details
+          arguments:
+            compare_model: ref('sat_order_details')
+            exclude_columns: ["{{ 'NONE' if target.name == 'lz' else 'LOAD_DATETIME' }}"]
+    columns:
+      - name: ORDER_HK
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_order_native')
+                field: ORDER_HK

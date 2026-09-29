@@ -41,6 +41,11 @@ models:
       +materialized: incremental
       +schema: raw_vault
       +tags: ['raw_vault']
+    raw_vault_native:           # hand-written vault, no AutomateDV (reconciled against raw_vault)
+      +database: DBT_DATA_VAULT
+      +materialized: incremental
+      +schema: raw_vault_native
+      +tags: ['raw_vault_native']
     business_vault:
       +database: DBT_DATA_VAULT
       +schema: business_vault

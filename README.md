@@ -116,6 +116,44 @@ USE SCHEMA DEV_LZ.TPCH_ORDERS_SYS;
 ALTER PIPE stg_orders_pp REFRESH;
 ```
 
+## Two implementations of the same vault: AutomateDV vs. plain dbt SQL
+
+The raw vault is built twice, side by side, from the same staging input:
+
+| | AutomateDV (`models/raw_vault/`) | Hand-written (`models/raw_vault_native/`) |
+|---|---|---|
+| Hashing | `automate_dv.stage(hashed_columns=...)` | `dv_hash()` macro in `macros/dv_hash.sql` |
+| Hubs / link | `automate_dv.hub()` / `link()` | `QUALIFY ROW_NUMBER()` for first-seen + `NOT EXISTS` against `{{ this }}` |
+| Satellites | `automate_dv.sat()` with `apply_source_filter` | latest-stored-row join + `LAG` over hashdiff |
+| Lines (non-comment) | 48 stage + 90 vault | 16 stage + 116 vault + 26 macro |
+| Schema | `*_raw_vault` | `*_raw_vault_native` |
+
+They are **proven identical** by `dbt_utils.equality` tests (`EXCEPT` in both
+directions) on all five vault tables and both staging models: 7 reconciliation
+tests, green on `dev` (LOAD_DATETIME excluded — each view calls
+`CURRENT_TIMESTAMP()` separately) and on `lz` (LOAD_DATETIME included).
+
+What the package hides, and the hand-written version has to get right:
+- **Hashing rules** — `CAST → TRIM → UPPER → NULLIF('')`, a `-1` NULL placeholder,
+  `^` delimiter, hashdiff columns **sorted alphabetically**, all-NULL composite
+  keys → NULL. `dv_hash()` reproduces the compiled SQL character for character.
+- **Satellite change detection against history.** Comparing only to the latest
+  stored hashdiff is not enough when the stage re-presents old rows (the `lz`
+  target reads the whole landing zone each run): the old version looks like a
+  change and is re-inserted. Both vaults filter to rows newer than the latest
+  stored `LOAD_DATETIME` per key — AutomateDV only does this with
+  `apply_source_filter`, which is off by default.
+
+Compared with the naive pattern in many tutorials (`md5(a || b || c)`,
+full-rebuild satellites, `current_timestamp` as the hub load date), this
+version: delimits hash inputs so `('1','23')` ≠ `('12','3')`; survives NULLs;
+keeps history via insert-only incremental satellites; and stamps hubs with the
+first time a key was seen, not the time of the latest run.
+
+Business vault additions: `as_of_dates` (daily end-of-day spine) and
+`pit_customer` (point-in-time pointers into `sat_customer_details`). The PIT is
+hand-written because AutomateDV deprecated `pit()` / `bridge()` in 0.11.0.
+
 ## Where dbt genuinely improves on the hand-written SQL
 
 - **No repeated hashing logic.** `SHA1_BINARY(UPPER(TRIM(...)))` for every

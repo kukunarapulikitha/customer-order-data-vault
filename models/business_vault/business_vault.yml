@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: as_of_dates
+    description: End-of-day spine from the first customer satellite load up to today; drives pit_customer.
+    columns:
+      - name: AS_OF_DATE
+        data_tests: [unique, not_null]
+
+  - name: pit_customer
+    description: >
+      Point-in-time table: one row per customer per as-of date, pointing at the
+      sat_customer_details row that was current at that moment.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [CUSTOMER_HK, AS_OF_DATE]
+    columns:
+      - name: SAT_CUSTOMER_DETAILS_PK
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: CUSTOMER_HK
