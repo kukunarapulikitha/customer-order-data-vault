@@ -1,7 +1,7 @@
 # Copy to ~/.dbt/profiles.yml (or ./profiles.yml, which is gitignored).
 # Never commit real credentials. Password is read from an env var.
 # role is omitted, so the user's default role is used; add `role:` if needed.
-tpch_data_vault:
+customer_order_data_vault:
   target: dev
   outputs:
     dev:        # vars-based batch simulation over SNOWFLAKE_SAMPLE_DATA

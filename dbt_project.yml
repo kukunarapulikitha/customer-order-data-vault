@@ -1,8 +1,8 @@
-name: 'tpch_data_vault'
+name: 'customer_order_data_vault'
 version: '1.0.0'
 config-version: 2
 
-profile: 'tpch_data_vault'
+profile: 'customer_order_data_vault'
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -30,7 +30,7 @@ vars:
 # Schemas are prefixed with the target schema (dev_*, dev_lz_*), so the two
 # targets never share incremental tables.
 models:
-  tpch_data_vault:
+  customer_order_data_vault:
     staging:
       +database: DBT_STAGING
       +materialized: view

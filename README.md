@@ -1,6 +1,6 @@
-# TPC-H Data Vault 2.0 on dbt Core + Snowflake
+# Customer–Order Data Vault 2.0 on dbt Core + Snowflake
 
-A dbt Core rebuild of the TPC-H customer/order Data Vault from Snowflake's two
+A dbt Core rebuild of the customer/order Data Vault (TPC-H sample data) from Snowflake's two
 native guides:
 
 - [Defensible Analytics using Data Vault and Snowflake](https://www.snowflake.com/en/developers/guides/defensible-analytics-using-data-vault-and-snowflake/)
@@ -21,6 +21,9 @@ landed.
 **Stack:** dbt Core 1.12 · dbt-snowflake 1.12 · AutomateDV 0.11.5 · dbt_utils 1.4 · Snowflake · Python 3.12
 
 ## Architecture
+
+![Architecture: source systems → Snowflake landing zone → dbt staging → raw vault (AutomateDV + hand-written) → business vault → information delivery](docs/architecture.svg)
+
 
 | Layer | Snowflake database | Schemas (`dev` / `lz` target) | Models |
 |---|---|---|---|

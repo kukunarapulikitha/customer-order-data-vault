@@ -1,4 +1,4 @@
-# CLAUDE.md — TPC-H Data Vault on dbt Core (AutomateDV)
+# CLAUDE.md — Customer–Order Data Vault on dbt Core (AutomateDV)
 
 Portfolio project: rebuild Snowflake's "Real-Time Data Vault" guide
 (TPC-H customers/orders) as a dbt Core project using AutomateDV.
@@ -17,7 +17,7 @@ See README.md for the model-by-model mapping to the native Snowflake SQL.
 ## Phase 0 — Location
 - Target folder: the user's "Portfolio Projects" directory. Find it
   (e.g. ~/Portfolio Projects, ~/Documents/Portfolio Projects); if ambiguous, ask.
-- Project lives at `<Portfolio Projects>/tpch-data-vault-dbt/`.
+- Project lives at `<Portfolio Projects>/customer-order-data-vault/`.
 - `git init`, first commit with the scaffold as-is.
 
 ## Phase 1 — Environment
