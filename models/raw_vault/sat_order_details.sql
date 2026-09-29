@@ -1,6 +1,9 @@
 -- Equivalent of rv_sat_order in the native Snowflake guide.
 
-{{ config(materialized='incremental') }}
+-- apply_source_filter: only stage rows newer than the latest stored row per key
+-- are considered. Without it, a stage that re-presents history (the lz target
+-- reads the whole landing zone every run) re-inserts old versions of changed keys.
+{{ config(materialized='incremental', meta={'apply_source_filter': true}) }}
 
 {%- set yaml_metadata -%}
 source_model: 'stg_orders'

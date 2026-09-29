@@ -1,7 +1,10 @@
 -- Equivalent of rv_sat_customer in the native Snowflake guide.
 -- Tracks descriptive attribute history for each customer_hk.
 
-{{ config(materialized='incremental') }}
+-- apply_source_filter: only stage rows newer than the latest stored row per key
+-- are considered. Without it, a stage that re-presents history (the lz target
+-- reads the whole landing zone every run) re-inserts old versions of changed keys.
+{{ config(materialized='incremental', meta={'apply_source_filter': true}) }}
 
 {%- set yaml_metadata -%}
 source_model: 'stg_customer'
